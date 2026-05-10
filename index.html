@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BlackRock Investment | Premium Digital Wealth Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Preloader -->
+<div id="preloader">
+  <div class="loader-orb">B</div>
+  <div class="loader-text">BlackRock Investment</div>
+  <div class="loader-track"><div class="loader-progress"></div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon"></div>
+  <div><div class="toast-title" id="toastTitle"></div><div class="toast-msg" id="toastMsg"></div></div>
+</div>
+
+<!-- Alert Overlay -->
+<div class="alert-overlay" id="alertOverlay">
+  <div class="alert-box">
+    <div class="alert-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M5.07 19H19a2 2 0 001.75-2.95l-6.96-12a2 2 0 00-3.5 0l-6.96 12A2 2 0 005.07 19z"/></svg></div>
+    <h3 class="alert-title">Insufficient Balance</h3>
+    <p class="alert-desc">You don't have sufficient balance for this investment. Please deposit funds to continue.</p>
+    <div class="alert-actions">
+      <button class="btn btn-secondary" onclick="closeAlert()">Cancel</button>
+      <button class="btn btn-primary" onclick="closeAlert();openDeposit()">Deposit Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('authModal')"><svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <h2>Welcome to BlackRock</h2>
+    <p>Sign in to access your investment portfolio</p>
+    <div class="tabs">
+      <button class="tab active" onclick="authTab('login', this)">Sign In</button>
+      <button class="tab" onclick="authTab('register', this)">Create Account</button>
+    </div>
+    <div id="loginTab">
+      <form onsubmit="handleAuth(event,'login')">
+        <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="lEmail" placeholder="name@example.com" required></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="lPass" placeholder="Enter your password" required></div>
+        <button class="btn btn-primary btn-block" style="margin-top:10px;">Sign In Securely</button>
+      </form>
+    </div>
+    <div id="registerTab" style="display:none;">
+      <form onsubmit="handleAuth(event,'register')">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="rFullName" placeholder="Enter your full name" required></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" type="email" id="rEmail" placeholder="name@example.com" required></div>
+        <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="rPass" minlength="8" required></div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" type="password" id="rConf" required></div>
+        <button class="btn btn-primary btn-block" style="margin-top:10px;">Create Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Deposit Modal -->
+<div class="modal-overlay" id="depModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('depModal')"><svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <h2>Fund Your Account</h2>
+    <p>Secure cryptocurrency deposits powered by blockchain technology</p>
+    <div style="display:flex;gap:10px;margin-bottom:24px;">
+      <button class="btn btn-secondary btn-sm" style="flex:1;border-color:var(--black);background:var(--black);color:var(--white);">₿ Bitcoin</button>
+      <button class="btn btn-secondary btn-sm" style="flex:1;opacity:0.5;cursor:default;">Ξ Ethereum</button>
+      <button class="btn btn-secondary btn-sm" style="flex:1;opacity:0.5;cursor:default;">🏦 Wire</button>
+    </div>
+    <div id="depStep1">
+      <div class="form-group"><label class="form-label">Amount (USD)</label><input class="form-input" type="number" id="depAmt" value="2000" min="2000"></div>
+      <label class="form-label">Send BTC to</label>
+      <div class="copy-box">
+        <p id="btcAddr">bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq</p>
+        <button class="btn btn-secondary btn-sm" onclick="copyBTC()"><svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copy Address</button>
+      </div>
+      <div class="form-group"><label class="form-label">Upload Payment Proof (Optional)</label><input class="form-input" type="file" accept="image/*" style="padding:10px;"></div>
+      <button class="btn btn-primary btn-block" onclick="submitDeposit()">I Have Made Payment</button>
+    </div>
+    <div id="depStep2" style="display:none;text-align:center;padding:28px 0;">
+      <div class="spinner"></div>
+      <h3 style="margin-bottom:10px;">Payment Submitted</h3>
+      <p>Please wait while we confirm your transaction. This typically takes 10-30 minutes depending on network congestion.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Investment Modal (Dashboard) -->
+<div class="modal-overlay" id="dashInvestModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('dashInvestModal')"><svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <h2>Choose Investment Plan</h2>
+    <p>Select your investment amount and start growing your wealth with BlackRock</p>
+    <div style="display:grid;gap:14px;">
+      <div class="card" style="cursor:pointer;border:2px solid var(--gray-200);padding:20px;" onclick="selectInvestPlan(2000, 'Starter')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><strong style="font-size:18px;">Starter Plan</strong><br><span style="color:var(--gray-600);font-size:13px;">5% monthly returns</span></div>
+          <div style="font-size:20px;font-weight:700;">$2,000</div>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;border:2px solid var(--black);background:var(--black);color:var(--white);padding:20px;" onclick="selectInvestPlan(5000, 'Professional')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><strong style="font-size:18px;">Professional Plan</strong><br><span style="color:var(--gray-300);font-size:13px;">8% monthly returns</span></div>
+          <div style="font-size:20px;font-weight:700;">$5,000</div>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;border:2px solid var(--gray-200);padding:20px;" onclick="selectInvestPlan(10000, 'Premium')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><strong style="font-size:18px;">Premium Plan</strong><br><span style="color:var(--gray-600);font-size:13px;">12% monthly returns</span></div>
+          <div style="font-size:20px;font-weight:700;">$10,000</div>
+        </div>
+      </div>
+      <div class="card" style="cursor:pointer;border:2px solid var(--gray-200);padding:20px;" onclick="selectInvestPlan(25000, 'Enterprise')">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><strong style="font-size:18px;">Enterprise Plan</strong><br><span style="color:var(--gray-600);font-size:13px;">15% monthly returns</span></div>
+          <div style="font-size:20px;font-weight:700;">$25,000</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transfer/Withdraw Modal -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('txModal')"><svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <h2 id="txTitle">Transfer Funds</h2>
+    <p id="txSub">Send funds securely to another account</p>
+    <form onsubmit="handleTx(event)">
+      <div class="form-group"><label class="form-label" id="txFieldL">Recipient Address</label><input class="form-input" required></div>
+      <div class="form-group"><label class="form-label">Amount (USD)</label><input class="form-input" type="number" id="txAmt" min="10" placeholder="0.00" required></div>
+      <div class="form-group"><label class="form-label">Description (Optional)</label><input class="form-input" placeholder="Payment for..."></div>
+      <button class="btn btn-primary btn-block" style="margin-top:4px;">Confirm</button>
+    </form>
+  </div>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="landing">
+  
+  <!-- Market Ticker -->
+  <div class="market-ticker">
+    <div class="ticker-track" id="tickerTrack">
+      <div class="ticker-item"><span>BLK</span><span class="ticker-up">▲ +2.4%</span><span>$845.32</span></div>
+      <div class="ticker-item"><span>SPY</span><span class="ticker-up">▲ +1.8%</span><span>$512.45</span></div>
+      <div class="ticker-item"><span>QQQ</span><span class="ticker-down">▼ -0.5%</span><span>$445.20</span></div>
+      <div class="ticker-item"><span>VTI</span><span class="ticker-up">▲ +1.2%</span><span>$268.90</span></div>
+      <div class="ticker-item"><span>BND</span><span class="ticker-up">▲ +0.3%</span><span>$72.15</span></div>
+      <div class="ticker-item"><span>GLD</span><span class="ticker-down">▼ -0.8%</span><span>$215.40</span></div>
+      <div class="ticker-item"><span>BLK</span><span class="ticker-up">▲ +2.4%</span><span>$845.32</span></div>
+      <div class="ticker-item"><span>SPY</span><span class="ticker-up">▲ +1.8%</span><span>$512.45</span></div>
+      <div class="ticker-item"><span>QQQ</span><span class="ticker-down">▼ -0.5%</span><span>$445.20</span></div>
+      <div class="ticker-item"><span>VTI</span><span class="ticker-up">▲ +1.2%</span><span>$268.90</span></div>
+    </div>
+  </div>
+
+  <!-- Premium Header / Navbar -->
+  <nav class="navbar" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <div class="logo-mark">B</div>
+        <div class="logo-text">BlackRock<span> Investment</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#invest" class="nav-link">Invest</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#testimonials" class="nav-link">Reviews</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openAuth()">Log In</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Get Started</button>
+        <!-- <button class="mobile-toggle" onclick="document.getElementById('mobMenu').classList.add('open')">☰</button> -->
+      </div>
+    </div>
+  </nav>
+  
+  <div class="mobile-menu" id="mobMenu" style="position:fixed;inset:0;background:var(--white);z-index:999;display:none;flex-direction:column;padding:24px;gap:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <a href="#" class="logo"><div class="logo-mark">B</div><div class="logo-text">BlackRock<span> Investment</span></div></a>
+      <button onclick="document.getElementById('mobMenu').style.display='none'" style="background:none;border:none;font-size:26px;cursor:pointer;color:var(--gray-600);">✕</button>
+    </div>
+    <a href="#about" class="nav-link" style="font-size:18px;padding:12px 0;border-bottom:1px solid var(--gray-200);" onclick="document.getElementById('mobMenu').style.display='none'">About</a>
+    <a href="#invest" class="nav-link" style="font-size:18px;padding:12px 0;border-bottom:1px solid var(--gray-200);" onclick="document.getElementById('mobMenu').style.display='none'">Invest</a>
+    <a href="#features" class="nav-link" style="font-size:18px;padding:12px 0;border-bottom:1px solid var(--gray-200);" onclick="document.getElementById('mobMenu').style.display='none'">Features</a>
+    <a href="#testimonials" class="nav-link" style="font-size:18px;padding:12px 0;border-bottom:1px solid var(--gray-200);" onclick="document.getElementById('mobMenu').style.display='none'">Reviews</a>
+    <a href="#faq" class="nav-link" style="font-size:18px;padding:12px 0;border-bottom:1px solid var(--gray-200);" onclick="document.getElementById('mobMenu').style.display='none'">FAQ</a>
+    <button class="btn btn-secondary btn-block" onclick="document.getElementById('mobMenu').style.display='none';openAuth()">Log In</button>
+    <button class="btn btn-primary btn-block" onclick="document.getElementById('mobMenu').style.display='none';openAuth('register')">Create Account</button>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="container">
+      <div class="hero-content reveal">
+        <span class="badge">🏆 The World's Largest Asset Manager</span>
+        <h1>Invest with<br><span>BlackRock Confidence</span></h1>
+        <p>Access institutional-grade investment tools, AI-driven portfolios, and enterprise security trusted by 85,000+ investors worldwide.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" style="padding:16px 32px;font-size:15px;" onclick="openAuth('register')">Open Free Account</button>
+          <button class="btn btn-outline" style="padding:16px 32px;font-size:15px;color:var(--white);border-color:var(--white);" onclick="document.getElementById('invest').scrollIntoView({behavior:'smooth'})">Explore Investments</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><span>$10T+</span><span>Assets Managed</span></div>
+          <div class="hero-stat"><span>85K+</span><span>Active Investors</span></div>
+          <div class="hero-stat"><span>99.9%</span><span>Platform Uptime</span></div>
+          <div class="hero-stat"><span>50+</span><span>Countries</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trusted By - Animated -->
+  <div class="trusted-section">
+  <div class="trusted-inner">
+    <div class="trusted-label">Trusted by the world's leading institutions</div>
+    <div class="trusted-wrapper">
+      <div class="trusted-track">
+        <!-- First set -->
+        <div class="trusted-grid">
+          <div class="trusted-card"><div class="trusted-icon">🏛️</div><div class="trusted-name">Goldman Sachs</div><div class="trusted-desc">Investment Banking</div></div>
+          <div class="trusted-card"><div class="trusted-icon">💎</div><div class="trusted-name">JPMorgan</div><div class="trusted-desc">Financial Services</div></div>
+          <div class="trusted-card"><div class="trusted-icon">📊</div><div class="trusted-name">Morgan Stanley</div><div class="trusted-desc">Wealth Management</div></div>
+          <div class="trusted-card"><div class="trusted-icon">₿</div><div class="trusted-name">Coinbase</div><div class="trusted-desc">Crypto Exchange</div></div>
+          <div class="trusted-card"><div class="trusted-icon">💳</div><div class="trusted-name">Stripe</div><div class="trusted-desc">Payment Processing</div></div>
+          <div class="trusted-card"><div class="trusted-icon">🌐</div><div class="trusted-name">Visa Inc.</div><div class="trusted-desc">Global Payments</div></div>
+        </div>
+        <!-- Duplicate set for seamless loop -->
+        <div class="trusted-grid">
+          <div class="trusted-card"><div class="trusted-icon">🏛️</div><div class="trusted-name">Goldman Sachs</div><div class="trusted-desc">Investment Banking</div></div>
+          <div class="trusted-card"><div class="trusted-icon">💎</div><div class="trusted-name">JPMorgan</div><div class="trusted-desc">Financial Services</div></div>
+          <div class="trusted-card"><div class="trusted-icon">📊</div><div class="trusted-name">Morgan Stanley</div><div class="trusted-desc">Wealth Management</div></div>
+          <div class="trusted-card"><div class="trusted-icon">₿</div><div class="trusted-name">Coinbase</div><div class="trusted-desc">Crypto Exchange</div></div>
+          <div class="trusted-card"><div class="trusted-icon">💳</div><div class="trusted-name">Stripe</div><div class="trusted-desc">Payment Processing</div></div>
+          <div class="trusted-card"><div class="trusted-icon">🌐</div><div class="trusted-name">Visa Inc.</div><div class="trusted-desc">Global Payments</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Leadership Section -->
+  <section class="leadership-section">
+    <div class="container">
+      <div class="leadership-grid">
+        <div class="leadership-img reveal">
+          <img src="Larry_Fink_with_Valdis_Dombrovskis_(cropped).jpg"Larry Fink - CEO BlackRock" onerror="this.src='https://via.placeholder.com/600x700/000000/FFFFFF?text=Larry+Fink'">
+        </div>
+        <div class="leadership-content reveal">
+          <span class="badge">Leadership</span>
+          <h2 style="margin:16px 0 16px;">Led by Visionary Leadership</h2>
+          <p style="font-size:16px;line-height:1.8;margin-bottom:16px;">Larry Fink, Chairman and CEO of BlackRock, has led the company to become the world's largest asset manager. Under his leadership since 1988, BlackRock has grown to manage over $10 trillion in assets for clients worldwide.</p>
+          <div class="leadership-quote">"We are building a system that allows people to save for retirement, to save for their children's education, to save for a rainy day. That's what we do."</div>
+          <p style="font-size:16px;line-height:1.8;">With decades of experience in finance and a commitment to sustainable investing, Larry Fink continues to shape the future of asset management and help millions achieve financial well-being.</p>
+          <div style="display:flex;gap:24px;margin-top:24px;">
+            <div><div style="font-size:28px;font-weight:700;">35+</div><div style="font-size:13px;color:var(--gray-600);">Years Leading BlackRock</div></div>
+            <div><div style="font-size:28px;font-weight:700;">$10T+</div><div style="font-size:13px;color:var(--gray-600);">Assets Under Management</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Investment Plans Section -->
+  <section id="invest" class="investment-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">Investment Plans</span>
+        <h2>Choose Your Investment Path</h2>
+        <p>Select from our curated investment plans designed to maximize your returns with institutional-grade strategies.</p>
+      </div>
+      <div class="plans-grid">
+        <div class="plan-card reveal" onclick="openInvest(2000)">
+          <div class="plan-amount">$2,000</div>
+          <div class="plan-desc">Starter Plan - 5% monthly returns</div>
+          <ul class="plan-features">
+            <li>Minimum investment period: 30 days</li>
+            <li>Basic portfolio diversification</li>
+            <li>Monthly performance reports</li>
+            <li>Email support</li>
+            <li>Risk level: Low to Moderate</li>
+          </ul>
+          <button class="btn btn-primary btn-block">Invest Now</button>
+        </div>
+        <div class="plan-card featured reveal" onclick="openInvest(5000)">
+          <div style="position:absolute;top:12px;right:12px;background:var(--white);color:var(--black);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">POPULAR</div>
+          <div class="plan-amount">$5,000</div>
+          <div class="plan-desc">Professional Plan - 8% monthly returns</div>
+          <ul class="plan-features">
+            <li>Minimum investment period: 60 days</li>
+            <li>Advanced AI-driven portfolio</li>
+            <li>Weekly performance reports</li>
+            <li>Priority support</li>
+            <li>Risk level: Moderate</li>
+          </ul>
+          <button class="btn btn-primary btn-block">Invest Now</button>
+        </div>
+        <div class="plan-card reveal" onclick="openInvest(10000)">
+          <div class="plan-amount">$10,000</div>
+          <div class="plan-desc">Premium Plan - 12% monthly returns</div>
+          <ul class="plan-features">
+            <li>Minimum investment period: 90 days</li>
+            <li>Institutional-grade strategies</li>
+            <li>Dedicated account manager</li>
+            <li>24/7 priority support</li>
+            <li>Risk level: Moderate to High</li>
+          </ul>
+          <button class="btn btn-primary btn-block">Invest Now</button>
+        </div>
+        <div class="plan-card reveal" onclick="openInvest(25000)">
+          <div class="plan-amount">$25,000</div>
+          <div class="plan-desc">Enterprise Plan - 15% monthly returns</div>
+          <ul class="plan-features">
+            <li>Minimum investment period: 180 days</li>
+            <li>Custom portfolio construction</li>
+            <li>Real-time analytics dashboard</li>
+            <li>VIP concierge service</li>
+            <li>Risk level: High</li>
+          </ul>
+          <button class="btn btn-primary btn-block">Invest Now</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Regulatory Compliance Section -->
+  <section class="regulatory-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">Compliance</span>
+        <h2>Regulatory Compliance & Security</h2>
+        <p>BlackRock Investment operates under strict regulatory oversight to ensure your investments are secure and compliant.</p>
+      </div>
+      <div class="reg-grid">
+        <div class="reg-card reveal"><div class="reg-icon">🏛️</div><h3>SEC Registered</h3><p>Fully registered with the U.S. Securities and Exchange Commission for investment advisory services.</p></div>
+        <div class="reg-card reveal"><div class="reg-icon">🔒</div><h3>SOC 2 Certified</h3><p>SOC 2 Type II certified ensuring highest standards for data security, availability, and confidentiality.</p></div>
+        <div class="reg-card reveal"><div class="reg-icon">🌍</div><h3>Global Compliance</h3><p>Compliant with FCA (UK), ASIC (Australia), MAS (Singapore), and BaFin (Germany) regulations.</p></div>
+        <div class="reg-card reveal"><div class="reg-icon">🛡️</div><h3>FDIC Insured</h3><p>Cash deposits are FDIC insured up to $250,000 through our banking partners.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About BlackRock -->
+  <section id="about">
+    <div class="container">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:48px;align-items:center;">
+        <div class="reveal">
+          <span class="badge">About BlackRock Investment</span>
+          <h2 style="font-size:clamp(28px,4vw,38px);margin:16px 0 16px;letter-spacing:-0.02em;">The World's Largest Asset Manager</h2>
+          <p style="color:var(--gray-600);font-size:16px;line-height:1.8;margin-bottom:16px;">Founded in 1988, BlackRock is the world's largest asset manager with over $10 trillion in assets under management. Our Aladdin® technology platform powers investment decisions for institutions globally, processing more risk analytics than any other system in the world.</p>
+          <p style="color:var(--gray-600);font-size:16px;line-height:1.8;margin-bottom:24px;">BlackRock Investment brings this institutional power directly to individual investors — combining decades of financial expertise with cutting-edge technology to democratize wealth creation for everyone.</p>
+          <div style="display:flex;gap:32px;flex-wrap:wrap;">
+            <div><div style="font-size:28px;font-weight:700;">$10T+</div><div style="font-size:13px;color:var(--gray-600);">Assets Under Management</div></div>
+            <div><div style="font-size:28px;font-weight:700;">35+</div><div style="font-size:13px;color:var(--gray-600);">Years of Excellence</div></div>
+            <div><div style="font-size:28px;font-weight:700;">70+</div><div style="font-size:13px;color:var(--gray-600);">Global Offices</div></div>
+          </div>
+        </div>
+        <div class="grid-3 reveal" style="grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="card" style="padding:24px;text-align:center;border-color:var(--gray-300);background:var(--gray-50);">
+            <div style="font-size:36px;font-weight:700;margin-bottom:6px;">$10T</div><div style="font-size:13px;color:var(--gray-600);">Global AUM</div>
+          </div>
+          <div class="card" style="padding:24px;text-align:center;border-color:var(--gray-300);background:var(--gray-50);">
+            <div style="font-size:36px;font-weight:700;margin-bottom:6px;">99.9%</div><div style="font-size:13px;color:var(--gray-600);">Uptime</div>
+          </div>
+          <div class="card" style="padding:24px;text-align:center;border-color:var(--gray-300);background:var(--gray-50);">
+            <div style="font-size:36px;font-weight:700;margin-bottom:6px;">24/7</div><div style="font-size:13px;color:var(--gray-600);">Monitoring</div>
+          </div>
+          <div class="card" style="padding:24px;text-align:center;border-color:var(--gray-300);background:var(--gray-50);">
+            <div style="font-size:36px;font-weight:700;margin-bottom:6px;">500K</div><div style="font-size:13px;color:var(--gray-600);">Insured/Cap</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" style="background:var(--gray-50);">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">Platform Features</span>
+        <h2>Institutional Power, Simplified</h2>
+        <p>BlackRock's proprietary technology and decades of expertise, now accessible to individual investors.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><h3>Aladdin® Technology</h3><p>Our world-renowned risk and portfolio analytics platform, processing millions of calculations per second to optimize your investments.</p></div>
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Institutional Security</h3><p>256-bit SSL encryption, SOC 2 Type II compliance, and cold storage. The same security standards protecting $10T in institutional assets.</p></div>
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><h3>Global Market Access</h3><p>Invest across 50+ markets — equities, fixed income, alternatives, and crypto — from a single unified dashboard.</p></div>
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><h3>Diversified iShares® ETFs</h3><p>Access the world's largest ETF provider. Build diversified portfolios with institutional-grade funds.</p></div>
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg></div><h3>Transparent Returns</h3><p>Real-time performance tracking, detailed reports, and a flat 0.8% management fee with zero hidden charges.</p></div>
+        <div class="card feature reveal"><div class="feature-icon"><svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><h3>Dedicated Advisors</h3><p>24/7 live support and dedicated portfolio managers for premium accounts. Your success is our priority.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-bg">
+    <div class="container stats-grid">
+      <div class="stat-item reveal"><div class="stat-num"><span>$</span>10T+</div><div class="stat-label">Assets Under Management</div></div>
+      <div class="stat-item reveal"><div class="stat-num">85,000<span>+</span></div><div class="stat-label">Active Digital Investors</div></div>
+      <div class="stat-item reveal"><div class="stat-num"><span>$</span>820M</div><div class="stat-label">Total Withdrawals Processed</div></div>
+      <div class="stat-item reveal"><div class="stat-num">99.9<span>%</span></div><div class="stat-label">Platform Availability</div></div>
+    </div>
+  </div>
+
+  <!-- Awards Section -->
+  <section class="awards-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">Recognition</span>
+        <h2>Awards & Industry Recognition</h2>
+      </div>
+      <div class="awards-grid reveal">
+        <div class="award-item"><div class="award-icon">🏆</div><div class="award-title">Best Asset Manager</div><div class="award-org">Global Finance Awards</div><div class="award-year">2025</div></div>
+        <div class="award-item"><div class="award-icon">🥇</div><div class="award-title">Top ESG Leader</div><div class="award-org">Sustainable Investment Forum</div><div class="award-year">2025</div></div>
+        <div class="award-item"><div class="award-icon">⭐</div><div class="award-title">Best Digital Platform</div><div class="award-org">Fintech Excellence Awards</div><div class="award-year">2024</div></div>
+        <div class="award-item"><div class="award-icon">🛡️</div><div class="award-title">Security Excellence</div><div class="award-org">CyberSecurity Breakthrough</div><div class="award-year">2024</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials - Auto Scrolling -->
+  <section id="testimonials" class="testimonials-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="badge">Client Stories</span>
+        <h2>Trusted by 85,000+ Investors</h2>
+        <p>See how BlackRock Investment is helping people grow their wealth worldwide.</p>
+      </div>
+      <div class="testimonials-wrapper reveal">
+        <div class="testimonials-track" id="testimonialsTrack">
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p>"BlackRock's platform gave me access to tools I previously only saw at institutional firms. My portfolio grew 18% in one year with their AI recommendations. The customer service is exceptional."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">JM</div>
+              <div class="author-info">
+                <div class="author-name">James Mitchell</div>
+                <div class="author-role">Real Estate Developer, USA</div>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p>"The interface is clean, fast, and secure. Customer support resolved my KYC verification in under an hour. It truly feels like working with the world's largest asset manager. Highly recommended!"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">SK</div>
+              <div class="author-info">
+                <div class="author-name">Sarah Kim</div>
+                <div class="author-role">VP Engineering, Canada</div>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p>"Finally, a platform that combines BlackRock's institutional power with retail simplicity. Withdrawals clear in less than a day. The transparency and professionalism are unmatched."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">RP</div>
+              <div class="author-info">
+                <div class="author-name">Robert Peters</div>
+                <div class="author-role">CFO, Logistics Group UK</div>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <div class="stars">★★★★★</div>
+            <p>"I've tried many investment platforms, but BlackRock stands out. The Aladdin technology really works - my returns have been consistent and the risk management is top-notch."</p>
+            <div class="testimonial-author">
+              <div class="author-avatar">MC</div>
+              <div class="author-info">
+                <div class="author-name">Maria Chen</div>
+                <div class="author-role">Entrepreneur, Singapore</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-nav">
+          <div class="testimonial-dot active" onclick="goToTestimonial(0)"></div>
+          <div class="testimonial-dot" onclick="goToTestimonial(1)"></div>
+          <div class="testimonial-dot" onclick="goToTestimonial(2)"></div>
+          <div class="testimonial-dot" onclick="goToTestimonial(3)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container" style="max-width:740px;">
+      <div class="section-header reveal">
+        <span class="badge">Support</span>
+        <h2>Frequently Asked Questions</h2>
+        <p>Quick answers to common questions about BlackRock Investment.</p>
+      </div>
+      <div class="faq-item reveal"><button class="faq-q" onclick="toggleFaq(this)">How do I start investing with BlackRock? <svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="faq-a">Create an account, verify your identity, fund your wallet, and choose an investment plan. Our Aladdin-powered AI allocates your funds automatically for optimal growth.</div></div>
+      <div class="faq-item reveal"><button class="faq-q" onclick="toggleFaq(this)">Is my money secure with BlackRock Investment? <svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="faq-a">Absolutely. We use the same 256-bit SSL encryption, institutional cold storage, and SOC 2 Type II compliance that protects over $10 trillion in assets. All deposits are insured up to $500,000.</div></div>
+      <div class="faq-item reveal"><button class="faq-q" onclick="toggleFaq(this)">How fast are withdrawals processed? <svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="faq-a">Standard withdrawals are processed within 24 hours. Premium members enjoy priority processing within 4 hours on business days.</div></div>
+      <div class="faq-item reveal"><button class="faq-q" onclick="toggleFaq(this)">What is the minimum deposit to activate my account? <svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="faq-a">Full platform access requires a minimum deposit of $2,000. Starter investment plans begin at $500 with limited features.</div></div>
+      <div class="faq-item reveal"><button class="faq-q" onclick="toggleFaq(this)">Does BlackRock Investment charge hidden fees? <svg class="faq-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><div class="faq-a">Never. Our pricing is 100% transparent. You pay a flat 0.8% management fee — nothing more. All transaction fees are shown before confirmation.</div></div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" style="background:var(--gray-50);">
+    <div class="container contact-grid">
+      <div class="reveal">
+        <span class="badge">Contact Us</span>
+        <h2 style="margin:12px 0 16px;font-size:36px;letter-spacing:-0.02em;">We're Here to Help</h2>
+        <p style="color:var(--gray-600);margin-bottom:28px;line-height:1.7;">Our global team is available around the clock. Reach out via chat, email, or phone — BlackRock's world-class support is always ready.</p>
+        <div class="contact-info">
+          <div class="contact-row"><div class="contact-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div><div><div class="contact-label">Global Headquarters</div><div class="contact-value">55 East 52nd Street, New York, NY 10055</div></div></div>
+          <div class="contact-row"><div class="contact-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></div><div><div class="contact-label">Email</div><div class="contact-value">support@blackrockinvestment.com</div></div></div>
+          <div class="contact-row"><div class="contact-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div><div><div class="contact-label">Phone</div><div class="contact-value">+1 (888) 555-0199</div></div></div>
+        </div>
+      </div>
+      <div class="card reveal" style="padding:32px;">
+        <h3 style="margin-bottom:20px;">Send us a Message</h3>
+        <form onsubmit="event.preventDefault();showToast('Message Sent','We\'ll respond within 24 hours.','success');this.reset();">
+          <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" required></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" required></div>
+          <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" rows="4" style="resize:vertical;" required></textarea></div>
+          <button class="btn btn-primary btn-block">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand"><div class="logo" style="color:var(--white);margin-bottom:16px;"><div class="logo-mark" style="background:var(--white);color:var(--black);">B</div><div class="logo-text">BlackRock<span style="font-weight:400;color:var(--gray-400);"> Investment</span></div></div><p>The world's largest asset manager. Over $10 trillion in assets under management, serving institutional and individual investors globally.</p></div>
+        <div><div class="footer-title">Company</div><a class="footer-link" href="#about">About BlackRock</a><a class="footer-link" href="#">Careers</a><a class="footer-link" href="#">Press</a><a class="footer-link" href="#contact">Contact</a></div>
+        <div><div class="footer-title">Resources</div><a class="footer-link" href="#">Market Insights</a><a class="footer-link" href="#">iShares® ETFs</a><a class="footer-link" href="#">Aladdin® Tech</a><a class="footer-link" href="#faq">FAQ</a></div>
+        <div><div class="footer-title">Legal</div><a class="footer-link" href="#">Terms of Service</a><a class="footer-link" href="#">Privacy Policy</a><a class="footer-link" href="#">Risk Disclosure</a><a class="footer-link" href="#">SEC Filings</a></div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 BlackRock Investment. All rights reserved. BlackRock® and Aladdin® are registered trademarks.</span>
+        <div class="social-links"><a href="#">𝕏</a><a href="#">in</a><a href="#">f</a><a href="#">📷</a></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dash">
+  <div class="dash-nav">
+    <div class="dash-nav-left">
+      <div class="dash-avatar" id="dAvatar">U</div>
+      <div class="dash-user-info"><div class="dash-name" id="dName">User</div><div class="dash-email" id="dEmail">user@email.com</div></div>
+    </div>
+    <div class="dash-actions">
+      <button class="icon-btn" onclick="showToast('Settings','Settings page coming soon.','success')" id="settingsBtn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+      <button class="icon-btn" onclick="showToast('Notifications','Deposit confirmed for $2,000.','success')"><span class="badge-count">2</span><svg class="icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+    </div>
+  </div>
+
+  <div class="dash-main">
+    <div class="greeting">
+      <h1>Welcome back, <span id="dFirst">User</span> 👋</h1>
+      <p>Monitor your portfolio and manage investments securely with BlackRock.</p>
+    </div>
+
+    <div class="balance-card">
+      <div class="bal-top"><span class="bal-label">Total Portfolio Value</span><button class="bal-toggle" onclick="toggleVis()"><svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      <div class="bal-amount" id="balTotal">$0.00</div>
+      <div class="bal-row">
+        <div class="bal-box"><div class="bal-box-label">💼 Invested</div><div class="bal-box-val" id="balInv">$0.00</div></div>
+        <div class="bal-box"><div class="bal-box-label">💵 Available</div><div class="bal-box-val" id="balAvailable">$0.00</div></div>
+      </div>
+      <div class="bal-actions">
+        <button class="btn btn-primary" onclick="openDeposit()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Deposit</button>
+        <button class="btn btn-outline" onclick="openInvestModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg> Invest</button>
+        <button class="btn btn-outline" onclick="openTx('transfer')"><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Transfer</button>
+        <button class="btn btn-outline" onclick="openTx('withdraw')"><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Withdraw</button>
+      </div>
+    </div>
+
+    <!-- Market Live Section -->
+    <div class="market-live">
+      <div class="market-header">
+        <h3>Live Market Data</h3>
+        <span style="font-size:13px;color:var(--gray-600);">Real-time updates</span>
+      </div>
+      <div class="market-grid">
+        <div class="market-item">
+          <div class="market-item-header"><span class="market-name">S&P 500</span><span class="market-change ticker-up">▲ +1.24%</span></div>
+          <div class="market-value">5,127.45</div>
+        </div>
+        <div class="market-item">
+          <div class="market-item-header"><span class="market-name">NASDAQ</span><span class="market-change ticker-up">▲ +2.15%</span></div>
+          <div class="market-value">16,274.30</div>
+        </div>
+        <div class="market-item">
+          <div class="market-item-header"><span class="market-name">DOW JONES</span><span class="market-change ticker-down">▼ -0.42%</span></div>
+          <div class="market-value">39,512.80</div>
+        </div>
+        <div class="market-item">
+          <div class="market-item-header"><span class="market-name">BITCOIN</span><span class="market-change ticker-up">▲ +3.67%</span></div>
+          <div class="market-value">$67,420</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-grid">
+      <div class="quick-card" onclick="openDeposit()"><div class="quick-icon" style="background:var(--black);"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg></div><div class="quick-label">Deposit</div></div>
+      <div class="quick-card" onclick="openInvestModal()"><div class="quick-icon" style="background:var(--gray-800);"><svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg></div><div class="quick-label">Invest</div></div>
+      <div class="quick-card" onclick="openTx('transfer')"><div class="quick-icon" style="background:var(--gray-600);"><svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div><div class="quick-label">Transfer</div></div>
+      <div class="quick-card" onclick="openTx('withdraw')"><div class="quick-icon" style="background:var(--gray-400);"><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div><div class="quick-label">Withdraw</div></div>
+    </div>
+
+    <!-- Verification Section -->
+    <div class="verification-section">
+      <div class="verification-header">
+        <div class="verification-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <div>
+          <div class="verification-title">Account Verification</div>
+          <div style="font-size:13px;color:var(--gray-600);margin-top:4px;">Complete verification to unlock full features</div>
+        </div>
+      </div>
+      <div class="verification-steps">
+        <div class="step completed">
+          <div class="step-number">✓</div>
+          <div class="step-label">Email</div>
+          <div class="step-status">Verified</div>
+        </div>
+        <div class="step completed">
+          <div class="step-number">✓</div>
+          <div class="step-label">Phone</div>
+          <div class="step-status">Verified</div>
+        </div>
+        <div class="step active">
+          <div class="step-number">3</div>
+          <div class="step-label">ID Upload</div>
+          <div class="step-status">In Progress</div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-label">Complete</div>
+          <div class="step-status">Pending</div>
+        </div>
+      </div>
+      <div class="upload-area" onclick="showToast('Upload','Document upload feature coming soon.','success')">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Upload Government ID</div>
+        <div class="upload-sub">Click to upload passport, driver's license, or national ID</div>
+      </div>
+    </div>
+
+    <!-- Investment History -->
+    <div class="investment-history">
+      <div class="history-header">
+        <h3>Recent Investments</h3>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('History','Full investment history coming soon.','success')">View All</button>
+      </div>
+      <div id="investmentHistoryList">
+        <div style="text-align:center;padding:40px;color:var(--gray-500);">
+          <div style="font-size:48px;margin-bottom:12px;">📊</div>
+          <div style="font-weight:600;margin-bottom:6px;">No investments yet</div>
+          <div style="font-size:14px;">Start investing to see your portfolio grow</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="settings-section">
+      <div class="settings-header">Account Settings</div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Two-Factor Authentication</div>
+          <div class="settings-desc">Add an extra layer of security to your account</div>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('active');showToast('Security','2FA enabled successfully.','success')"></div>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Email Notifications</div>
+          <div class="settings-desc">Receive updates about your investments</div>
+        </div>
+        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">SMS Alerts</div>
+          <div class="settings-desc">Get text messages for important updates</div>
+        </div>
+        <div class="toggle" onclick="this.classList.toggle('active')"></div>
+      </div>
+      <div class="settings-item" style="padding-top:20px;">
+        <button class="btn btn-secondary btn-block" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Transaction</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="txTable">
+            <tr><td colspan="4" style="text-align:center;padding:40px;color:var(--gray-500);">No transactions yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-nav">
+    <div class="mobile-nav-inner">
+      <button class="m-nav-btn active" style="color:var(--black);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1v-3m-6 6v-4m0 4h-6a1 1 0 01-1-1v-3m12-10V6a1 1 0 00-1-1h-4a1 1 0 00-1 1v6m6-6v10a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4"/></svg>Home</button>
+      <button class="m-nav-btn" onclick="openDeposit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v12m6-6H6"/></svg>Deposit</button>
+      <button class="m-nav-btn" onclick="openInvestModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>Invest</button>
+      <button class="m-nav-btn" onclick="openTx('transfer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chat Widget - Enhanced -->
+<div class="chat-widget">
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-head"><h3>💬 BlackRock Support</h3><button class="chat-close" onclick="toggleChat()"><svg class="icon" viewBox="0 0 24 24" style="stroke:var(--white);"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg bot"><div class="bot-avatar">BR</div><span>👋 Welcome to BlackRock Investment. I'm here to help you with your investment journey. How can I assist you today?</span></div>
+    </div>
+    <div class="chat-suggestions">
+      <div class="chat-suggestion" onclick="quickAsk('How do I deposit?')">How to deposit?</div>
+      <div class="chat-suggestion" onclick="quickAsk('What are the fees?')">Fees?</div>
+      <div class="chat-suggestion" onclick="quickAsk('Investment plans')">Plans</div>
+    </div>
+    <div class="chat-foot">
+      <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
+      <button class="btn btn-primary btn-sm" onclick="sendMsg()"><svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+    </div>
+  </div>
+  <button class="chat-btn pulse" id="chatBtn" onclick="toggleChat()"><svg class="icon" style="stroke:var(--white);" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const state = { user: null, balance: 0, invested: 0, transactions: [], investments: [] };
+
+// Preloader - Fixed with proper timeout
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    const preloader = $('preloader');
+    if (preloader) {
+      preloader.classList.add('hidden');
+    }
+  }, 2500);
+});
+
+// Toast
+function showToast(t, m, type='success') {
+  const icons = { success: '<svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>', warning: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>', error: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>' };
+  $('toastIcon').innerHTML = icons[type]; $('toastTitle').textContent=t; $('toastMsg').textContent=m; $('toast').classList.add('show'); setTimeout(()=> $('toast').classList.remove('show'), 3500);
+}
+
+// Modal
+function openModal(id) { $(id).classList.add('active'); }
+function closeModal(id) { $(id).classList.remove('active'); }
+function closeAlert() { $('alertOverlay').classList.remove('active'); }
+
+// Auth
+function openAuth(tab='login') { openModal('authModal'); document.querySelectorAll('.tab').forEach(t=>{const is= t.textContent.includes(tab==='login'?'Sign':'Create'); t.classList.toggle('active', is);}); $('loginTab').style.display = tab==='login'?'block':'none'; $('registerTab').style.display = tab==='login'?'none':'block'; }
+function authTab(tab, el) { document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); $('loginTab').style.display = tab==='login'?'block':'none'; $('registerTab').style.display = tab==='login'?'none':'block'; }
+function handleAuth(e, type) { 
+  e.preventDefault(); 
+  if(type==='register') { 
+    if($('rPass').value !== $('rConf').value) return showToast('Error','Passwords do not match','error'); 
+    const fullName = $('rFullName').value.trim();
+    state.user = { fullName: fullName, email: $('rEmail').value }; 
+  } else { 
+    state.user = { fullName: 'John Doe', email: $('lEmail').value }; 
+  } 
+  closeModal('authModal'); 
+  enterDash(); 
+  showToast('Welcome!', `${state.user.fullName}, your BlackRock account is ready. Start by making a deposit.`,'success'); 
+}
+function enterDash() { 
+  $('landing').style.display='none'; 
+  $('dash').classList.add('active'); 
+  const names = state.user.fullName.split(' ');
+  $('dFirst').textContent = names[0]; 
+  $('dName').textContent = state.user.fullName; 
+  $('dEmail').textContent = state.user.email; 
+  $('dAvatar').textContent = names[0][0] + (names[1] ? names[1][0] : '');
+  updateBal(); 
+}
+function logout() { $('dash').classList.remove('active'); $('landing').style.display='block'; state.user = null; state.balance = 0; state.invested = 0; state.transactions = []; state.investments = []; showToast('Logged Out','See you next time.','success'); }
+
+// Balance
+function updateBal() { 
+  const tot = state.invested + state.balance; 
+  $('balTotal').textContent = state.vis ? '$'+tot.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '••••••'; 
+  $('balInv').textContent = state.vis ? '$'+state.invested.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '••••••'; 
+  $('balAvailable').textContent = state.vis ? '$'+state.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '••••••';
+}
+function toggleVis() { state.vis = !state.vis; updateBal(); }
+
+// Deposit
+function openDeposit() { openModal('depModal'); $('depStep1').style.display='block'; $('depStep2').style.display='none'; }
+function copyBTC() { navigator.clipboard.writeText($('btcAddr').textContent).then(() => showToast('Copied','BTC address copied to clipboard.','success')); }
+function submitDeposit() { const amt = parseFloat($('depAmt').value); if(!amt || amt<2000) return showToast('Invalid','Minimum deposit is $2,000 to activate full features.','error'); $('depStep1').style.display='none'; $('depStep2').style.display='block'; closeModal('depModal'); setTimeout(()=>{ state.balance += amt; state.invested += amt; updateBal(); addTx('deposit','<svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>','Bitcoin Deposit',amt,'+'); addInvestment('Bitcoin Deposit',amt); showToast('Confirmed!',`$${amt.toLocaleString()} added successfully.`,'success'); }, 4500); }
+
+// Investment (Homepage)
+function openInvest(amount) {
+  if(!state.user) { openAuth(); return; }
+  if(amount > state.balance) {
+    $('alertOverlay').classList.add('active');
+    return;
+  }
+  state.balance -= amount;
+  state.invested += amount;
+  updateBal();
+  const plan = $('investPlan').value === amount.toString() ? $('investPlan').options[$('investPlan').selectedIndex].text : `Plan - $${amount.toLocaleString()}`;
+  addTx('investment','<svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>','Investment - '+plan,amount,'+');
+  addInvestment(plan,amount);
+  showToast('Success!',`$${amount.toLocaleString()} invested successfully.`,'success');
+}
+
+// Investment Modal (Dashboard)
+function openInvestModal() { openModal('dashInvestModal'); }
+function selectInvestPlan(amount, planName) {
+  if(!state.user) return;
+  if(amount > state.balance) {
+    closeModal('dashInvestModal');
+    $('alertOverlay').classList.add('active');
+    return;
+  }
+  state.balance -= amount;
+  state.invested += amount;
+  updateBal();
+  addTx('investment','<svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg>','Investment - '+planName+' Plan',amount,'+');
+  addInvestment(planName+' Plan',amount);
+  closeModal('dashInvestModal');
+  showToast('Success!',`$${amount.toLocaleString()} invested in ${planName} Plan.`,'success');
+}
+
+function addInvestment(name, amount) {
+  state.investments.push({ name, amount, date: new Date().toLocaleDateString(), roi: 'Pending' });
+  renderInvestments();
+}
+
+function renderInvestments() {
+  const list = $('investmentHistoryList');
+  if(state.investments.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--gray-500);"><div style="font-size:48px;margin-bottom:12px;">📊</div><div style="font-weight:600;margin-bottom:6px;">No investments yet</div><div style="font-size:14px;">Start investing to see your portfolio grow</div></div>';
+    return;
+  }
+  list.innerHTML = state.investments.map(inv => `
+    <div class="history-item">
+      <div class="history-info">
+        <div>${inv.name}</div>
+        <div>${inv.date}</div>
+      </div>
+      <div class="history-amount positive">+$${inv.amount.toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+// Transfer/Withdraw
+function openTx(mode) { $('txTitle').textContent = mode==='transfer'?'Transfer Funds':'Withdraw Funds'; $('txSub').textContent = mode==='transfer'?'Send to another BlackRock account':'Withdraw to your bank or wallet'; $('txFieldL').textContent = mode==='transfer'?'Recipient Email':'Bank Account / Wallet'; $('txAmt').value=''; openModal('txModal'); }
+function handleTx(e) { e.preventDefault(); const amt = parseFloat($('txAmt').value); if(!amt || amt<10) return showToast('Invalid','Minimum transaction is $10.','error'); closeModal('txModal'); if(amt > state.invested) return showToast('Insufficient','Available: $'+state.invested.toLocaleString(),'error'); state.invested -= amt; state.balance -= amt; updateBal(); const mode = $('txTitle').textContent.includes('Withdraw') ? 'withdraw' : 'transfer'; addTx(mode, mode==='withdraw'?'<svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>':'<svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>', mode==='withdraw'?'Withdrawal':'Transfer',amt,'-'); showToast('Processing',`$${amt.toLocaleString()} sent successfully.`,'success'); }
+
+function addTx(type,icon,desc,amt,sign) { 
+  const tbody = $('txTable');
+  if(tbody.children[0] && tbody.children[0].children.length === 4 && tbody.children[0].children[0].textContent === 'No transactions yet') {
+    tbody.innerHTML = '';
+  }
+  const row = document.createElement('tr'); 
+  const date = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}); 
+  row.innerHTML = `<td><div class="tx-info"><div class="tx-icon ${type}">${icon}</div><div><strong style="font-size:14px;">${desc}</strong><div style="font-size:12px;color:var(--gray-600);">${type}</div></div></div></td><td>${date}</td><td class="${sign==='+'?'amount-plus':'amount-minus'}">${sign}$${amt.toLocaleString()}.00</td><td><span class="status ${sign==='+'?'pending':'complete'}">${sign==='+'?'Pending':'Completed'}</span></td></tr>`; 
+  tbody.insertBefore(row, tbody.firstChild); 
+}
+
+// Testimonials Auto-Scroll
+let currentTestimonial = 0;
+const testimonials = [0, 1, 2, 3];
+function goToTestimonial(index) {
+  currentTestimonial = index;
+  const track = $('testimonialsTrack');
+  track.style.transform = `translateX(-${index * 100}%)`;
+  document.querySelectorAll('.testimonial-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === index);
+  });
+}
+setInterval(() => {
+  currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+  goToTestimonial(currentTestimonial);
+}, 5000);
+
+// Smart Chatbot - Enhanced
+function toggleChat() { $('chatWindow').classList.toggle('open'); $('chatBtn').classList.remove('pulse'); }
+function quickAsk(text) { $('chatInput').value = text; sendMsg(); }
+function sendMsg() {
+  const input = $('chatInput'); const v = input.value.trim(); if(!v) return;
+  appendMsg(v, 'user'); input.value='';
+  showTyping();
+  setTimeout(()=>{
+    const r = getSmartResponse(v);
+    removeTyping();
+    appendMsg(r, 'bot');
+  }, 1000 + Math.random()*800);
+}
+
+function appendMsg(text, type) {
+  const div = document.createElement('div');
+  div.className = `chat-msg ${type}`;
+  if(type==='bot') div.innerHTML = `<div class="bot-avatar">BR</div><span>${text}</span>`;
+  else div.innerHTML = `<span>${text}</span>`;
+  $('chatBody').appendChild(div);
+  $('chatBody').scrollTop = $('chatBody').scrollHeight;
+}
+
+function showTyping() { const d = document.createElement('div'); d.className='typing-indicator'; d.id='typing'; d.innerHTML='<div class="bot-avatar">BR</div><div class="typing-dots"><span></span><span></span><span></span></div>'; $('chatBody').appendChild(d); $('chatBody').scrollTop = 9999; }
+function removeTyping() { const t=$('typing'); if(t)t.remove(); }
+
+function getSmartResponse(msg) {
+  const m = msg.toLowerCase();
+  if(m.includes('deposit') || m.includes('fund') || m.includes('add money') || m.includes('put money')) return "💸 To deposit, click the 'Deposit' button in your dashboard. Minimum deposit is $2,000. You can use Bitcoin, Ethereum, or bank wire. Processing takes 10-30 minutes.";
+  if(m.includes('withdraw') || m.includes('cash out') || m.includes('get money') || m.includes('take out')) return "📤 Withdrawals are processed within 24 hours. Go to your dashboard, click 'Withdraw', enter the amount and your bank/wallet details. Minimum withdrawal is $100.";
+  if(m.includes('invest') || m.includes('plan') || m.includes('return') || m.includes('profit')) return "📊 We offer 4 investment plans: Starter ($2,000, 5%/mo), Professional ($5,000, 8%/mo), Premium ($10,000, 12%/mo), and Enterprise ($25,000, 15%/mo). All powered by our Aladdin® AI technology.";
+  if(m.includes('fee') || m.includes('charge') || m.includes('cost') || m.includes('price')) return "💳 We charge a transparent 0.8% flat management fee on all investments. No hidden charges, no withdrawal fees, no surprises. What you see is what you get.";
+  if(m.includes('security') || m.includes('safe') || m.includes('scam') || m.includes('legit') || m.includes('trust')) return "🛡️ BlackRock uses 256-bit SSL encryption, institutional cold storage, and SOC 2 Type II compliance — the same security protecting $10 trillion in assets. We're fully regulated and insured up to $500,000 per account.";
+  if(m.includes('blackrock') || m.includes('about') || m.includes('larry') || m.includes('company')) return "🏛️ BlackRock is the world's largest asset manager with $10T+ AUM, led by CEO Larry Fink since 1988. Our Aladdin® technology powers investment decisions for institutions globally. We're bringing institutional power to individual investors.";
+  if(m.includes('hello') || m.includes('hi') || m.includes('hey') || m.includes('good')) return "👋 Hello! Welcome to BlackRock Investment. I'm here to help you grow your wealth. How can I assist you today? Feel free to ask about deposits, investments, or any account questions.";
+  if(m.includes('help') || m.includes('support') || m.includes('contact') || m.includes('assist')) return "🤖 I'm here 24/7 to help! You can ask me about:\n• How to deposit/withdraw\n• Investment plans and returns\n• Account verification\n• Security features\n• Fees and charges\n\nFor complex issues, I can connect you to a human specialist.";
+  if(m.includes('verification') || m.includes('verify') || m.includes('kyc') || m.includes('id')) return "📝 To verify your account, go to the Verification section in your dashboard. You'll need to upload a government-issued ID (passport, driver's license, or national ID). Verification usually takes 1-2 business days.";
+  if(m.includes('balance') || m.includes('money') || m.includes('account')) return "💰 Your current balance is shown at the top of your dashboard. You can see your total portfolio value, invested amount, and available balance. All amounts are in USD and update in real-time.";
+  return "🤔 I understand. Let me connect you with a live BlackRock specialist for personalized assistance. Alternatively, you can:\n• Check our FAQ section\n• Email us at support@blackrockinvestment.com\n• Call us at +1 (888) 555-0199\n\nHow would you like to proceed?";
+}
+
+// Misc
+function toggleFaq(el) { el.parentElement.classList.toggle('open'); }
+window.addEventListener('scroll', () => { $('nav').classList.toggle('scrolled', window.scrollY > 50); });
+const obs = new IntersectionObserver(e => e.forEach(i => { if(i.isIntersecting) i.target.classList.add('visible'); }), {threshold: 0.1});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
